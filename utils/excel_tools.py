@@ -11,56 +11,62 @@ import xlsxwriter
 import time
 from log_reader import LogFile
 
-workbook = xlsxwriter.Workbook('chart_date_axis.xlsx')
+workbook = xlsxwriter.Workbook('my_report.xlsx')
 
 worksheet = workbook.add_worksheet()
-chart = workbook.add_chart({'type': 'line'})
+
 date_format = workbook.add_format({'num_format': 'hh:mm:ss'})
+number_format = workbook.add_format()
+number_format.set_num_format('0.000')
 
 # Widen the first column to display the dates.
-worksheet.set_column('A:A', 30)
+worksheet.set_column('A:A', 10)
 
-log = LogFile("/Users/yongzhou/access_20160925.log")
+log = LogFile("d:\\access_20160925.log")
 server_times = log.server_time()
+chart_pos = 2
 
 for k in server_times.keys():
     dates = []
     values = []
     logs_count = 0
+    # The default chart width x height is 480 x 288 pixels.
+    chart = workbook.add_chart({'type': 'line'})
+    chart.set_size({'x_scale': 2.5, 'y_scale': 1.2})
+    datasheet = workbook.add_worksheet(k)
     for log in server_times[k]:
         logs_count += 1
         date_from_log = time.strptime(log[0], "%d/%b/%Y:%H:%M:%S +0800")
         dates.append(dtime(date_from_log.tm_hour, date_from_log.tm_min, date_from_log.tm_sec))
-        values.append(log[1])
+        values.append(float(log[1]))
 
     # Write the date to the worksheet.
-    worksheet.write_column('A1', dates, date_format)
-    worksheet.write_column('B1', values)
+    datasheet.write_column('A1', dates, date_format)
+    datasheet.write_column('B1', values, number_format)
 
     # Add a series to the chart.
     chart.add_series({
-        'categories': '=Sheet1!$A$1:$A${}'.format(logs_count),
-        'values': '=Sheet1!$B$1:$B${}'.format(logs_count),
+        'categories': '={}!$A$1:$A${}'.format(k, logs_count),
+        'values': '={}!$B$1:$B${}'.format(k, logs_count),
     })
 
     # Configure the X axis as a Date axis and set the max and min limits.
     chart.set_title({
-        'name': u'一天内访问{}的源站的响应时间分布'.format(k),
+        'name': u'访问{}的源站的响应时间分布'.format(k),
         'name_font': {
-            'color': 'blue',
             'size': 11,
         },
     })
 
     chart.set_x_axis({
-        'name': u'访问时间',
-        'date_axis': True,
+        'name': u'24小时时间轴',
+        # 'date_axis': True,    #在windows系统中加入这个会导致错误
         'min': dtime(0, 0, 0),
         'max': dtime(23, 59, 59),
     })
 
     chart.set_y_axis({
-        'name': u'响应时间',
+        'name': u'IIS+DB 响应时间',
     })
 
     # Turn off the legend.
@@ -75,6 +81,6 @@ for k in server_times.keys():
     })
 
     # Insert the chart into the worksheet.
-    worksheet.insert_chart('D2', chart)
-    workbook.close()
-    exit()
+    worksheet.insert_chart('D{}'.format(chart_pos), chart)
+    chart_pos += 20
+workbook.close()
