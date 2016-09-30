@@ -6,5 +6,6 @@ from utils.excel_tools import Report
 
 
 if __name__ == '__main__':
-    r = Report(file_name="my_report_{}".format("123"), log_path="path")
-    pass
+    r = Report(file_name="my_report.xls", log_path="d:\\access_20160925.log")
+    r.insert_chart()
+    r.close_workbook()

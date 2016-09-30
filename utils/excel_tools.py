@@ -30,12 +30,13 @@ class Report:
 
     def insert_chart(self):
         for k in self.server_times.keys():
+            print "Start to insert chart for {}".format(k)
             dates = []
             values = []
             logs_count = 0
             # The default chart width x height is 480 x 288 pixels.
             chart = self.workbook.add_chart({'type': 'line'})
-            chart.set_size({'x_scale': 2.5, 'y_scale': 1.2})
+            chart.set_size({'x_scale': 2, 'y_scale': 1.2})
             datasheet = self.workbook.add_worksheet(k)
             for log in self.server_times[k]:
                 logs_count += 1
@@ -84,6 +85,8 @@ class Report:
             })
 
             # Insert the chart into the worksheet.
-            self.worksheet.insert_chart('D{}'.format(self.chart_pos), chart)
+            self.worksheet.insert_chart('A{}'.format(self.chart_pos), chart)
             self.chart_pos += 20
+
+    def close_workbook(self):
         self.workbook.close()
