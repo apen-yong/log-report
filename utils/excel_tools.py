@@ -90,3 +90,7 @@ class Report:
 
     def close_workbook(self):
         self.workbook.close()
+
+    def insert_detail_info(self):
+
+

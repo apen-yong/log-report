@@ -37,8 +37,14 @@ class LogFile:
         self.pages_server_time = {}
         for p in pages.keys():
             self.pages_server_time[p] = []
+        self.http_code_hash = {}
+        self.user_visit = []
 
     def server_time(self):
+        """
+        获取在pages中定义的每个类型页面之处理时间
+        :return:
+        """
         print "Start to proccess {} logs from file".format(self.count)
         for log in self.all_logs:
             for k in pages.keys():
@@ -48,10 +54,23 @@ class LogFile:
         return self.pages_server_time
 
     def status_hash(self):
-        pass
+        """
+        获取http状态码 并且放入刀hash中
+        :return:
+        """
+        for log in self.all_logs:
+            self.http_code_hash[log[7]] += 1
+        return self.http_code_hash
 
     def info(self):
-        pass
+        """
+        获取所有独立用户的ip地址
+        :return:
+        """
+        for log in self.all_logs:
+            self.user_visit.append(log[2])
+        return set(self.user_visit)
+
 
 
 if __name__ == '__main__':
