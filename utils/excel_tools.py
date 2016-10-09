@@ -24,9 +24,13 @@ class Report:
         # Widen the first column to display the dates.
         self.worksheet.set_column('A:A', 10)
 
-        self.log = LogFile(kwargs.get('log_path'))
-        self.server_times = self.log.server_time()
+        log = LogFile(kwargs.get('log_path'))
+        self.server_times = log.get_server_time()
+        self.uniq_visit = log.get_uniq_visit()
+        self.status_code = log.get_status_hash()
+        self.count = log.get_count_http()
         self.chart_pos = 2
+        self.info_pos = 2
 
     def insert_chart(self):
         for k in self.server_times.keys():
@@ -36,7 +40,7 @@ class Report:
             logs_count = 0
             # The default chart width x height is 480 x 288 pixels.
             chart = self.workbook.add_chart({'type': 'line'})
-            chart.set_size({'x_scale': 2, 'y_scale': 1.2})
+            chart.set_size({'x_scale': 1.3, 'y_scale': 0.8})
             datasheet = self.workbook.add_worksheet(k)
             for log in self.server_times[k]:
                 logs_count += 1
@@ -85,12 +89,30 @@ class Report:
             })
 
             # Insert the chart into the worksheet.
-            self.worksheet.insert_chart('A{}'.format(self.chart_pos), chart)
+            self.worksheet.insert_chart('E{}'.format(self.chart_pos), chart)
             self.chart_pos += 20
 
     def close_workbook(self):
         self.workbook.close()
 
+    def get_pos(self):
+        p = "A{}".format(self.info_pos + 1)
+        print "Write data for {}".format(p)
+        self.info_pos += 1
+        return p
+
     def insert_detail_info(self):
+        table = self.worksheet.add_table('A2:C20')
+        self.worksheet.set_column('A:A', 20)
+        self.worksheet.set_column('C:C', 30)
+        self.worksheet.write_row(self.get_pos(), [u'独立IP:', len(self.uniq_visit)])
+        self.worksheet.write_row(self.get_pos(), [u'http请求总数:', self.count])
+        for (code, times) in self.status_code.items():
+            if code == '500':
+                self.worksheet.write_row(self.get_pos(), [u"HTTP状态码 {}:".format(code), times, u"服务器返回了错误，一般是iis报错"])
+            elif code == '404':
+                self.worksheet.write_row(self.get_pos(), [u"HTTP状态码 {}:".format(code), times, u"资源不存在"])
+            else:
+                self.worksheet.write_row(self.get_pos(), [u"HTTP状态码 {}:".format(code), times])
 
 

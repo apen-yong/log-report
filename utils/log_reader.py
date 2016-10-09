@@ -34,43 +34,51 @@ class LogFile:
             except AttributeError, e:
                 # print "Not from cdn. {}".format(e)
                 continue
-        self.pages_server_time = {}
-        for p in pages.keys():
-            self.pages_server_time[p] = []
-        self.http_code_hash = {}
-        self.user_visit = []
 
-    def server_time(self):
+
+
+    def get_server_time(self):
         """
         获取在pages中定义的每个类型页面之处理时间
         :return:
         """
         print "Start to proccess {} logs from file".format(self.count)
+        pages_server_time = {}
+        for p in pages.keys():
+            pages_server_time[p] = []
         for log in self.all_logs:
             for k in pages.keys():
                 if re.search(pages.get(k), log[3]):
-                    self.pages_server_time[k].append([log[2], log[8]])
+                    pages_server_time[k].append([log[2], log[8]])
                     # print  "{}: {}".format(log[2], log[8])
-        return self.pages_server_time
+        return pages_server_time
 
-    def status_hash(self):
+    def get_status_hash(self):
         """
         获取http状态码 并且放入刀hash中
         :return:
         """
+        http_code_hash = {}
         for log in self.all_logs:
-            self.http_code_hash[log[7]] += 1
-        return self.http_code_hash
+            try:
+                http_code_hash[log[4]] += 1
+            except KeyError, e:
+                print "Found a new http status code: {}".format(e)
+                http_code_hash[log[4]] = 1
+        return http_code_hash
 
-    def info(self):
+    def get_uniq_visit(self):
         """
         获取所有独立用户的ip地址
         :return:
         """
+        user_visit = []
         for log in self.all_logs:
-            self.user_visit.append(log[2])
-        return set(self.user_visit)
+            user_visit.append(log[2])
+        return set(user_visit)
 
+    def get_count_http(self):
+        return self.count
 
 
 if __name__ == '__main__':
