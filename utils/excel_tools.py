@@ -10,6 +10,7 @@ from datetime import time as dtime
 import xlsxwriter
 import time
 from log_reader import LogFile
+import datetime
 
 
 class Report:
@@ -31,6 +32,11 @@ class Report:
         self.count = log.get_count_http()
         self.chart_pos = 2
         self.info_pos = 2
+        self.title_format = self.workbook.add_format({
+            'bold': True,
+            'font_size': 18,
+            'font_name': 'Trebuchet MS'
+        })
 
     def insert_chart(self):
         for k in self.server_times.keys():
@@ -90,7 +96,7 @@ class Report:
 
             # Insert the chart into the worksheet.
             self.worksheet.insert_chart('E{}'.format(self.chart_pos), chart)
-            self.chart_pos += 20
+            self.chart_pos += 10
 
     def close_workbook(self):
         self.workbook.close()
@@ -102,7 +108,20 @@ class Report:
         return p
 
     def insert_detail_info(self):
-        table = self.worksheet.add_table('A2:C20')
+        table = self.worksheet.add_table('A2:C20', {
+            'columns': [
+                {'header': u'项目'},
+                {'header': u'统计值'},
+                {'header': u'备注'}
+            ]
+        })
+        deploy_table = self.worksheet.add_table('A25:C35', {
+            'columns': [
+                {'header': u'发布时间'},
+                {'header': u'发布内容'},
+                {'header': u'版本号'}
+            ]
+        })
         self.worksheet.set_column('A:A', 20)
         self.worksheet.set_column('C:C', 30)
         self.worksheet.write_row(self.get_pos(), [u'独立IP:', len(self.uniq_visit)])
@@ -114,5 +133,10 @@ class Report:
                 self.worksheet.write_row(self.get_pos(), [u"HTTP状态码 {}:".format(code), times, u"资源不存在"])
             else:
                 self.worksheet.write_row(self.get_pos(), [u"HTTP状态码 {}:".format(code), times])
+
+    def insert_title(self):
+        title = u'{}日访问日志分析报告'.format(str(datetime.date.today()))
+        self.worksheet.insert_textbox('D1', title, self.title_format)
+
 
 
