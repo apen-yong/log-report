@@ -80,6 +80,24 @@ class LogFile:
     def get_count_http(self):
         return self.count
 
+    def get_server_time_percent(self):
+        """
+        计算一天内请求消耗时间的所占百分比
+        :return:
+        """
+        calc_times = dict.fromkeys(["1", "2", "3", "5", "7", "9"])
+        for log in self.all_logs:
+            if log[8] <= 1:
+                calc_times["1"] += 1 if calc_times["1"] else 1
+
+            if log[8] <= 2:
+                calc_times["2"] += 1 if calc_times["2"] else 1
+
+            if log[8] <= 3:
+                calc_times["3"] += 1 if calc_times["3"] else 1
+
+            if log[8] <= 3:
+                calc_times["3"] += 1 if calc_times["3"] else 1
 
 if __name__ == '__main__':
     mylog = LogFile("/Users/yongzhou/access_20160925.log")
